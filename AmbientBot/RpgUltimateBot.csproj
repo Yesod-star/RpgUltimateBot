@@ -10,7 +10,11 @@
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Hosting" Version="5.2.0" />
     <PackageReference Include="Discord.Net" Version="3.10.0" />
+    <PackageReference Include="Lava" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.9" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="NAudio" Version="2.1.0" />
+    <PackageReference Include="Victoria" Version="6.0.1026" />
   </ItemGroup>
 
   <ItemGroup>

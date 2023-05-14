@@ -3,6 +3,10 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
+using Victoria.Node;
+using Microsoft.Extensions.DependencyInjection;
+using Victoria;
+using Discord;
 
 namespace RpgUltimateBot.Services.Implementation;
 
