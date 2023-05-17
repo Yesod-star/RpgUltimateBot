@@ -1,79 +1,48 @@
-﻿using RpgUltimateBot.Services.Implementation;
-using Discord;
-using Discord.Addons.Hosting;
-using Discord.Commands;
-using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Threading.Tasks;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Victoria.Node;
-using Victoria.Player;
-using Victoria;
 
-namespace RpgUltimateBot;
-
-
-
-class RpgUltimateBot : ModuleBase<SocketCommandContext>
+namespace DSharpPlus.ExampleBots.CommandsNext.HelloWorld
 {
-
-    public readonly LavaNode _lavaNode;
-
-    static async Task Main()
+    public sealed class Program
     {
+        public static async Task Main()
+        {
+            string? token = "MTEwMTk3MTYzOTQ4ODQ5OTc3Mg.GWj8US.AtqQzFIjQNyGi_VbuJbmp4SorDfG3TF6QUgyN0";
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Console.WriteLine("Please specify a token in the DISCORD_TOKEN environment variable.");
+                Environment.Exit(1);
 
-        var builder = new Microsoft.Extensions.Hosting.HostBuilder()
-        .ConfigureAppConfiguration(x =>
+                return;
+            }
+
+            DiscordConfiguration config = new()
             {
-                var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", false, true)
-                .Build();
-                        
-                x.AddConfiguration(configuration);
-            })
-        .ConfigureLogging(x =>
-        {
-            x.AddConsole();
-            x.SetMinimumLevel(LogLevel.Debug);
-                        
-        })
-        .ConfigureDiscordHost((context, config) =>
-        {
-            config.SocketConfig = new DiscordSocketConfig
-            {
-                LogLevel = Discord.LogSeverity.Debug,
-                AlwaysDownloadUsers = false,
-                MessageCacheSize = 200,
-                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
+                Token = token,
+                Intents = DiscordIntents.AllUnprivileged | DiscordIntents.MessageContents
             };
+            DiscordClient client = new(config);
 
-            config.Token = context.Configuration["Token"];
-        })
-        .UseCommandService((context, config) =>
-        {
-            config.CaseSensitiveCommands = false;
-            config.LogLevel = LogSeverity.Debug;
-            config.DefaultRunMode = Discord.Commands.RunMode.Sync;
-        })
-        .ConfigureServices((context, services) =>
-        {
-            services.AddHostedService<CommandHandler>();
-            services.AddLavaNode(x =>
+            DiscordActivity status = new("with fire", ActivityType.Playing);
+
+            ServiceCollection serviceCollection = new();
+            serviceCollection.AddSingleton(Random.Shared);
+
+            CommandsNextConfiguration commandsConfig = new()
             {
-                x.Authorization = BotConfig.LavalinkPassword;
-                x.Hostname = BotConfig.LavalinkHost;
-                x.Port = (ushort)BotConfig.LavalinkPort;
-            });
-        })
-        .UseConsoleLifetime();
+                Services = serviceCollection.BuildServiceProvider(),
+                StringPrefixes = new[] { "!" }
+            };
+            CommandsNextExtension commandsNext = client.UseCommandsNext(commandsConfig);
 
-        var host = builder.Build();
-        using (host)
-        {
-            await host.RunAsync();
+            commandsNext.RegisterCommands(typeof(Program).Assembly);
+
+            await client.ConnectAsync(status, UserStatus.Online);
+
+            await Task.Delay(-1);
         }
     }
-
-    }
+}
